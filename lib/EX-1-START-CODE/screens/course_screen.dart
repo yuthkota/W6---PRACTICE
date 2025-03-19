@@ -1,28 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../models/course.dart';
+import '../providers/courses_provider.dart';
 import 'course_score_form.dart';
 
-class CourseScreen extends StatefulWidget {
+const Color mainColor = Colors.blue;
+
+class CourseScreen extends StatelessWidget {
   const CourseScreen({super.key, required this.course});
 
   final Course course;
 
-  @override
-  State<CourseScreen> createState() => _CourseScreenState();
-}
-
-class _CourseScreenState extends State<CourseScreen> {
-  List<CourseScore> get scores => widget.course.scores;
-
-  void _addScore() async {
-    CourseScore? newSCore = await Navigator.of(context).push<CourseScore>(
+  void _addScore(BuildContext context) async {
+    CourseScore? newScore = await Navigator.of(context).push<CourseScore>(
       MaterialPageRoute(builder: (ctx) => const CourseScoreForm()),
     );
 
-    if (newSCore != null) {
-      setState(() {
-        scores.add(newSCore);
-      });
+    if (newScore != null) {
+      Provider.of<CoursesProvider>(context, listen: false)
+          .addScore(course.name, newScore);
     }
   }
 
@@ -32,22 +28,25 @@ class _CourseScreenState extends State<CourseScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final coursesProvider = Provider.of<CoursesProvider>(context);
+    final updatedCourse = coursesProvider.getCourseFor(course.name);
+    final scores = updatedCourse.scores;
+    
     Widget content = const Center(child: Text('No Scores added yet.'));
 
     if (scores.isNotEmpty) {
       content = ListView.builder(
         itemCount: scores.length,
-        itemBuilder:
-            (ctx, index) => ListTile(
-              title: Text(scores[index].studentName),
-              trailing: Text(
-                scores[index].studenScore.toString(),
-                style: TextStyle(
-                  color: scoreColor(scores[index].studenScore),
-                  fontSize: 15,
-                ),
-              ),
+        itemBuilder: (ctx, index) => ListTile(
+          title: Text(scores[index].studentName),
+          trailing: Text(
+            scores[index].studenScore.toString(),
+            style: TextStyle(
+              color: scoreColor(scores[index].studenScore),
+              fontSize: 15,
             ),
+          ),
+        ),
       );
     }
 
@@ -56,11 +55,14 @@ class _CourseScreenState extends State<CourseScreen> {
       appBar: AppBar(
         backgroundColor: mainColor,
         title: Text(
-          widget.course.name,
+          updatedCourse.name,
           style: const TextStyle(color: Colors.white),
         ),
         actions: [
-          IconButton(onPressed: _addScore, icon: const Icon(Icons.add)),
+          IconButton(
+            onPressed: () => _addScore(context),
+            icon: const Icon(Icons.add),
+          ),
         ],
       ),
       body: content,

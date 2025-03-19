@@ -1,31 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../models/course.dart';
+import '../providers/courses_provider.dart';
 import 'course_screen.dart';
 
 const Color mainColor = Colors.blue;
 
-class CourseListScreen extends StatefulWidget {
+class CourseListScreen extends StatelessWidget {
   const CourseListScreen({super.key});
 
-  @override
-  State<CourseListScreen> createState() => _CourseListScreenState();
-}
-
-class _CourseListScreenState extends State<CourseListScreen> {
-  final List<Course> _allCourses = [Course(name: 'HTML'), Course(name: 'JAVA')];
-
-  void _editCourse(Course course) async {
+  void _editCourse(BuildContext context, Course course) async {
     await Navigator.of(context).push<Course>(
       MaterialPageRoute(builder: (ctx) => CourseScreen(course: course)),
     );
-
-    setState(() {
-      // trigger a rebuild
-    });
   }
 
   @override
   Widget build(BuildContext context) {
+    final coursesProvider = Provider.of<CoursesProvider>(context);
+    final allCourses = coursesProvider.getCourses();
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -33,15 +27,51 @@ class _CourseListScreenState extends State<CourseListScreen> {
         title: const Text('SCORE APP', style: TextStyle(color: Colors.white)),
       ),
       body: ListView.builder(
-        itemCount: _allCourses.length,
-        itemBuilder:
-            (ctx, index) => Dismissible(
-              key: Key(_allCourses[index].name),
-              child: CourseTile(
-                course: _allCourses[index],
-                onEdit: _editCourse,
+        itemCount: allCourses.length,
+        itemBuilder: (ctx, index) => Dismissible(
+          key: Key(allCourses[index].name),
+          onDismissed: (direction) {
+            coursesProvider.deleteCourse(allCourses[index].name);
+            
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('${allCourses[index].name} course removed'),
+                duration: const Duration(seconds: 2),
               ),
-            ),
+            );
+          },
+          background: Container(
+            color: Colors.red,
+            alignment: Alignment.centerRight,
+            padding: const EdgeInsets.only(right: 20),
+            child: const Icon(Icons.delete, color: Colors.white),
+          ),
+          confirmDismiss: (direction) async {
+            return await showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  title: const Text("Confirm"),
+                  content: Text("Are you sure you want to delete ${allCourses[index].name}?"),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(false),
+                      child: const Text("CANCEL"),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(true),
+                      child: const Text("DELETE"),
+                    ),
+                  ],
+                );
+              },
+            );
+          },
+          child: CourseTile(
+            course: allCourses[index],
+            onEdit: (course) => _editCourse(context, course),
+          ),
+        ),
       ),
     );
   }
