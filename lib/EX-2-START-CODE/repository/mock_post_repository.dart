@@ -17,11 +17,7 @@ class MockPostRepository extends PostRepository {
           title: 'State Management',
           description: 'Different approaches to manage state in Flutter',
         ),
-        Post(
-          id: 3,
-          title: 'Who is the best',
-          description: 'teacher ronan',
-        ),
+        Post(id: 3, title: 'Who is the best', description: 'teacher ronan'),
         Post(
           id: 4,
           title: 'Flutter Architecture',
@@ -31,4 +27,3 @@ class MockPostRepository extends PostRepository {
     });
   }
 }
-

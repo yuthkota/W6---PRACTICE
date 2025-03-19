@@ -42,44 +42,38 @@ class PostScreen extends StatelessWidget {
         return CircularProgressIndicator(); // display a progress
 
       case AsyncValueState.error:
-        return Text('Error: ${postsValue.error}'); // display a error
+        return Text('Error: ${postsValue.error}'); // display an error
 
       case AsyncValueState.success:
         final posts = postsValue.data!;
-        
+
         // Check if the list is empty
         if (posts.isEmpty) {
           return Text('No posts for now'); // display empty list message
         }
-        
+
         // Display the list of posts
         return ListView.builder(
           itemCount: posts.length,
           itemBuilder: (context, index) {
-            return PostCard(post: posts[index]);
+            return PostTile(post: posts[index]);
           },
         );
     }
   }
 }
 
-class PostCard extends StatelessWidget {
-  const PostCard({super.key, required this.post});
+class PostTile extends StatelessWidget {
+  const PostTile({super.key, required this.post});
 
   final Post post;
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.all(8.0),
-      child: ListTile(
-        title: Text(post.title),
-        subtitle: Text(post.description),
-        leading: CircleAvatar(
-          child: Text(post.id.toString()),
-        ),
-      ),
+    return ListTile(
+      title: Text(post.title),
+      subtitle: Text(post.description),
+      leading: CircleAvatar(child: Text(post.id.toString())),
     );
   }
 }
-
