@@ -28,34 +28,12 @@ class CourseScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final coursesProvider = Provider.of<CoursesProvider>(context);
-    final updatedCourse = coursesProvider.getCourseFor(course.name);
-    final scores = updatedCourse.scores;
-    
-    Widget content = const Center(child: Text('No Scores added yet.'));
-
-    if (scores.isNotEmpty) {
-      content = ListView.builder(
-        itemCount: scores.length,
-        itemBuilder: (ctx, index) => ListTile(
-          title: Text(scores[index].studentName),
-          trailing: Text(
-            scores[index].studenScore.toString(),
-            style: TextStyle(
-              color: scoreColor(scores[index].studenScore),
-              fontSize: 15,
-            ),
-          ),
-        ),
-      );
-    }
-
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: mainColor,
         title: Text(
-          updatedCourse.name,
+          course.name,
           style: const TextStyle(color: Colors.white),
         ),
         actions: [
@@ -65,7 +43,30 @@ class CourseScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: content,
+      body: Consumer<CoursesProvider>(
+        builder: (context, coursesProvider, child) {
+          final updatedCourse = coursesProvider.getCourseFor(course.name);
+          final scores = updatedCourse.scores;
+
+          if (scores.isEmpty) {
+            return const Center(child: Text('No Scores added yet.'));
+          }
+
+          return ListView.builder(
+            itemCount: scores.length,
+            itemBuilder: (ctx, index) => ListTile(
+              title: Text(scores[index].studentName),
+              trailing: Text(
+                scores[index].studenScore.toString(),
+                style: TextStyle(
+                  color: scoreColor(scores[index].studenScore),
+                  fontSize: 15,
+                ),
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 }
